@@ -252,19 +252,11 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
-    av_register_all();
-
-    if (avformat_network_init()) {
-        return 1;
-    }
-
 #ifdef BUILD_DEBUG
     SDL_LogSetAllPriority(SDL_LOG_PRIORITY_DEBUG);
 #endif
 
     int res = scrcpy(args.serial, args.port, args.max_size, args.bit_rate) ? 0 : 1;
-
-    avformat_network_deinit(); // ignore failure
 
     return res;
 }

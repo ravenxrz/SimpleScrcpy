@@ -12,7 +12,7 @@
 
 #define PREFIX ""
 
-#define PREFIXED_SERVER_PATH "/home/raven/Projects/phone_mirror/server/scrcpy-server.jar"
+#define PREFIXED_SERVER_PATH "/home/raven/Projects/phonemirror/server/scrcpy-server.jar"
 
 #define SCRCPY_VERSION "0.1"
 
