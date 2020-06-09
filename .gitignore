@@ -53,3 +53,6 @@ dkms.conf
 
 # build
 build
+
+# vsocde config
+.vscode
