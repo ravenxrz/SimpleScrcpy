@@ -6,7 +6,6 @@
 #include <libavformat/avformat.h>
 #include <sys/time.h>
 #include <SDL2/SDL.h>
-
 #include "command.h"
 #include "common.h"
 #include "decoder.h"
@@ -108,16 +107,6 @@ SDL_bool scrcpy(const char *serial, Uint16 local_port, Uint16 max_size, Uint32 b
         server_stop(&server, serial);
         goto finally_destroy_frames;
     }
-
-    // if (!controller_init(&controller, device_socket)) {
-    //     ret = SDL_FALSE;
-    //     goto finally_stop_decoder;
-    // }
-
-    // if (!controller_start(&controller)) {
-    //     ret = SDL_FALSE;
-    //     goto finally_destroy_controller;
-    // }
 
     if (!screen_init_rendering(&screen, device_name, frame_size)) {
         ret = SDL_FALSE;
