@@ -42,24 +42,7 @@ static int run_decoder(void *data) {
     struct decoder *decoder = data;
     int ret = 0;
 
-    AVCodec *codec = avcodec_find_decoder(AV_CODEC_ID_H264);
-    if (!codec) {
-        LOGE("H.264 decoder not found");
-        return -1;
-    }
-
-    AVCodecContext *codec_ctx = avcodec_alloc_context3(codec);
-    if (!codec_ctx) {
-        LOGC("Could not allocate decoder context");
-        return -1;
-    }
-
-    if (avcodec_open2(codec_ctx, codec, NULL) < 0) {
-        LOGE("Could not open H.264 codec");
-        ret = -1;
-        goto run_finally_free_codec_ctx;
-    }
-
+    // avformat context 
     AVFormatContext *format_ctx = avformat_alloc_context();
     if (!format_ctx) {
         LOGC("Could not allocate format context");
@@ -92,6 +75,27 @@ static int run_decoder(void *data) {
         goto run_finally_free_avio_ctx;
     }
 
+
+    // codec context
+    AVCodec *codec = avcodec_find_decoder(AV_CODEC_ID_H264);
+    if (!codec) {
+        LOGE("H.264 decoder not found");
+        return -1;
+    }
+
+    AVCodecContext *codec_ctx = avcodec_alloc_context3(codec);
+    if (!codec_ctx) {
+        LOGC("Could not allocate decoder context");
+        return -1;
+    }
+
+    if (avcodec_open2(codec_ctx, codec, NULL) < 0) {
+        LOGE("Could not open H.264 codec");
+        ret = -1;
+        goto run_finally_free_codec_ctx;
+    }
+
+    // packet
     AVPacket packet;
     av_init_packet(&packet);
     packet.data = NULL;
