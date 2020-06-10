@@ -1,9 +1,16 @@
 #include <stdio.h>
 #include "command.h"
+#include "server.h"
+#include "config.h"
+#include <SDL2/SDL.h>
+
 
 int main(int argc, char const *argv[])
 {
-    process_t pid = adb_push("/home/raven/Projects/phonemirror/server/scrcpy-server.jar", "/data/local/tmp");
-    printf("pid %d\n", pid);
+     SDL_LogSetAllPriority(SDL_LOG_PRIORITY_DEBUG);
+
+    struct server server;
+    server_init(&server);
+    server_start(&server, 2555, DEFAULT_MAX_SIZE, DEFAULT_BIT_RATE);
     return 0;
 }
