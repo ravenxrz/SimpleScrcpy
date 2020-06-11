@@ -18,7 +18,7 @@ scrcpy是一款性能极佳的android mirror软件. 考虑到源代码量不算�
 
 ## 2. 架构
 
-scrcpy本质上就是一个socket通信,所有又server端和client端,但是为了避免混淆,下面用pc端和phone端来解释.
+scrcpy本质上就是一个socket通信,所有有server端和client端,但是为了避免混淆,下面用pc端和phone端来解释.
 
 总架构:
 
@@ -45,13 +45,13 @@ ok,让我们再深入一点.
 
 为什么pc中scrcpy命令一键入后,phone会自动推流? phone中并没有安装任何软件?
 
-看看源码中server目录下是否又一个jar包? 
+看看源码中server目录下是否有一个jar包? 
 
 ![](https://raw.githubusercontent.com/ravenxrz/phonemirror/master/pic/1.png)
 
 没错,就是它在起作用呢. 每次scrcpy程序启动后,第一件事做的就是将这个jar包push到phone中,然后将它启动,就是它负责采集phone端屏幕信息, 编码, 推流的.
 
-至于这个jar包具体做的,那就要去看server端的java源码了. 我不关心java端,所以不做分析.
+至于这个jar包具体怎么做的,那就要去看server端的java源码了. 我不关心java端,所以不做分析.
 
 ### pc端
 
