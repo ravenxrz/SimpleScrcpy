@@ -1,6 +1,6 @@
 scrcpy是一款性能极佳的android mirror软件. 考虑到源代码量不算大,所以作为个人的C语言入门项目来阅读.在此简记.
 
-源项目repo: https://github.com/Genymobile/scrcpy
+源项目repo: https://raw.githubuserconten.com/Genymobile/scrcpy
 
 ## 1. 说明
 
@@ -22,7 +22,7 @@ scrcpy本质上就是一个socket通信,所有又server端和client端,但是为
 
 总架构:
 
-![](https://github.com/ravenxrz/phonemirror/tree/master/pic/0.png)
+![](https://raw.githubuserconten.com/ravenxrz/phonemirror/blob/master/pic/0.png)
 
 Phone端会不停地采集屏幕信息然后将其编码并发送给pc端.
 
@@ -47,7 +47,7 @@ ok,让我们再深入一点.
 
 看看源码中server目录下是否又一个jar包? 
 
-![](https://github.com/ravenxrz/phonemirror/tree/master/pic/1.png)
+![](https://raw.githubuserconten.com/ravenxrz/phonemirror/blob/master/pic/1.png)
 
 没错,就是它在起作用呢. 每次scrcpy程序启动后,第一件事做的就是将这个jar包push到phone中,然后将它启动,就是它负责采集phone端屏幕信息, 编码, 推流的.
 
@@ -78,7 +78,7 @@ display frames        |<-----------------| send frames
 
 ```
 
-![](https://github.com/ravenxrz/phonemirror/tree/master/pic/2.png)
+![](https://raw.githubuserconten.com/ravenxrz/phonemirror/blob/master/pic/2.png)
 
 ok,更多的就去看源码吧.
 
