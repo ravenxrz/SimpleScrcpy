@@ -42,38 +42,6 @@ static int run_decoder(void *data) {
     struct decoder *decoder = data;
     int ret = 0;
 
-    // avformat context 
-    AVFormatContext *format_ctx = avformat_alloc_context();
-    if (!format_ctx) {
-        LOGC("Could not allocate format context");
-        ret = -1;
-        goto final;
-    }
-
-    unsigned char *buffer = av_malloc(BUFSIZE);
-    if (!buffer) {
-        LOGC("Could not allocate buffer");
-        ret = -1;
-        goto run_finally_free_format_ctx;
-    }
-
-    AVIOContext *avio_ctx = avio_alloc_context(buffer, BUFSIZE, 0, decoder, read_packet, NULL, NULL);
-    if (!avio_ctx) {
-        LOGC("Could not allocate avio context");
-        ret = -1;
-        goto finally_free_buffer;
-    }
-
-    format_ctx->pb = avio_ctx;
-
-    if (avformat_open_input(&format_ctx, NULL, NULL, NULL) < 0) {
-        LOGE("Could not open video stream");
-        ret = -1;
-        goto run_finally_free_avio_ctx;
-    }
-
-
-    // codec context
     AVCodec *codec = avcodec_find_decoder(AV_CODEC_ID_H264);
     if (!codec) {
         LOGE("H.264 decoder not found");
@@ -92,7 +60,38 @@ static int run_decoder(void *data) {
         goto run_finally_free_codec_ctx;
     }
 
-    // packet
+    AVFormatContext *format_ctx = avformat_alloc_context();
+    if (!format_ctx) {
+        LOGC("Could not allocate format context");
+        ret = -1;
+        goto run_finally_close_codec;
+    }
+
+    unsigned char *buffer = av_malloc(BUFSIZE);
+    if (!buffer) {
+        LOGC("Could not allocate buffer");
+        ret = -1;
+        goto run_finally_free_format_ctx;
+    }
+
+    AVIOContext *avio_ctx = avio_alloc_context(buffer, BUFSIZE, 0, decoder, read_packet, NULL, NULL);
+    if (!avio_ctx) {
+        LOGC("Could not allocate avio context");
+        // avformat_open_input takes ownership of 'buffer'
+        // so only free the buffer before avformat_open_input()
+        av_free(buffer);
+        ret = -1;
+        goto run_finally_free_format_ctx;
+    }
+
+    format_ctx->pb = avio_ctx;
+
+    if (avformat_open_input(&format_ctx, NULL, NULL, NULL) < 0) {
+        LOGE("Could not open video stream");
+        ret = -1;
+        goto run_finally_free_avio_ctx;
+    }
+
     AVPacket packet;
     av_init_packet(&packet);
     packet.data = NULL;
@@ -134,17 +133,14 @@ static int run_decoder(void *data) {
 
 run_quit:
     avformat_close_input(&format_ctx);
+run_finally_free_avio_ctx:
+    av_freep(&avio_ctx);
+run_finally_free_format_ctx:
+    avformat_free_context(format_ctx);
 run_finally_close_codec:
     avcodec_close(codec_ctx);
 run_finally_free_codec_ctx:
     avcodec_free_context(&codec_ctx);
-run_finally_free_avio_ctx:
-    av_freep(&avio_ctx);
-finally_free_buffer:
-    av_free(buffer);
-run_finally_free_format_ctx:
-    avformat_free_context(format_ctx);
-final:
     notify_stopped();
     return ret;
 }
