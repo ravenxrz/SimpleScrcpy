@@ -37,7 +37,7 @@ void frames_destroy(struct frames *frames);
 // set the decoder frame as ready for rendering
 // this function locks frames->mutex during its execution
 // returns true if the previous frame had been consumed
-SDL_bool frames_offer_decoed_frame(struct frames *frames);
+SDL_bool frames_offer_decoded_frame(struct frames *frames);
 
 // mark the rendering frame as consumed and return it
 // MUST be called with frames->mutex locked!!!

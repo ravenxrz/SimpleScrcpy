@@ -1,4 +1,4 @@
-# 添加所有源文件和头文件
+# C添加所有源文件和头文y(./src SRC_DIR)件
 include_directories(./include)
 aux_source_directory(./src SRC_DIR)
 # set(EXTRA_SRC )

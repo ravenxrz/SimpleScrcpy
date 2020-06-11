@@ -1,4 +1,4 @@
-#include "device.h"
+#include"device.h"
 #include "log.h"
 
 SDL_bool device_read_info(socket_t device_socket, char *device_name, struct size *size) {

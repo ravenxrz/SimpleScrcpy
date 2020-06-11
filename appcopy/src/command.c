@@ -97,7 +97,7 @@ process_t adb_reverse(const char *device_socket_name, uint16_t local_port)
     char remote[108 + 14 + 1];
     sprintf(local, "tcp:%" PRIu16, local_port);
     snprintf(remote, sizeof(remote), "localabstract:%s", device_socket_name);
-    const char *const adb_cmd[] = {"reverse", local, remote};
+    const char *const adb_cmd[] = {"reverse", remote, local};
     return adb_execute(adb_cmd, ARRAY_LEN(adb_cmd));
 }
 process_t adb_reverse_remove(const char *device_socket_name)

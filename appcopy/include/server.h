@@ -23,7 +23,7 @@ struct server
     SDL_bool server_copied_to_device;
 };
 
-#define SERVER_ININTIALIZER                   \
+#define SERVER_INITIALIZER                    \
     {                                         \
         .process = PROCESS_NONE,              \
         .server_socket = INVALID_SOCKET,      \

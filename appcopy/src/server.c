@@ -98,7 +98,7 @@ static void close_socket(socket_t *socket)
 
 void server_init(struct server *server)
 {
-    *server = (struct server)SERVER_ININTIALIZER;
+    *server = (struct server)SERVER_INITIALIZER;
 }
 
 SDL_bool server_start(struct server *server, Uint16 local_port, Uint16 max_size, Uint32 bit_rate)
@@ -111,7 +111,7 @@ SDL_bool server_start(struct server *server, Uint16 local_port, Uint16 max_size,
     server->server_copied_to_device = SDL_TRUE;
 
     // 2. enable the tunnel
-    if(!!enable_tunnel(local_port))
+    if(!enable_tunnel(local_port))
     {
         return SDL_FALSE;
     }
@@ -125,6 +125,7 @@ SDL_bool server_start(struct server *server, Uint16 local_port, Uint16 max_size,
         disable_tunnel();
         return SDL_FALSE;
     }
+    LOGD("listen on port %d", local_port);
 
     // 4. 启动phone端进程
     server->process = execute_server(max_size, bit_rate);
@@ -134,6 +135,7 @@ SDL_bool server_start(struct server *server, Uint16 local_port, Uint16 max_size,
         disable_tunnel();
         return SDL_FALSE;
     }
+    LOGD("start device process success");
 
     return SDL_TRUE;
 }

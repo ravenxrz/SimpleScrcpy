@@ -7,10 +7,23 @@ struct size{
     int height;
 };
 
+int i0 = 0;
+int i1 = 1;
+#define LOG(index)              \
+do {                            \
+    printf("%d\n", i##index);   \
+}while(0)                       \
+
+
 struct size test_stack_memory(void);
 
 int main(int argc, char const *argv[])
 {
+    
+    fprintf(stderr,"file %s, function %s, line %d\n",__FILE__,__FUNCTION__ ,__LINE__);
+    LOG(0);
+    LOG(1);
+    
     struct size size = test_stack_memory();
     printf("main size addr %p\n", &size);
     printf("size width %d, height %d\n", size.width, size.height);

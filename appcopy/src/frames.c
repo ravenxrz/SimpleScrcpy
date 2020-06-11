@@ -78,7 +78,7 @@ static void frames_swap(struct frames *frames)
     frames->rendering_frame = tmp;
 }
 
-SDL_bool frames_offer_decoed_frame(struct frames *frames)
+SDL_bool frames_offer_decoded_frame(struct frames *frames)
 {
     mutex_lock(frames->mutex);
 #ifndef SKIP_FRAMES
