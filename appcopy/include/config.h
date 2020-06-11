@@ -10,9 +10,9 @@
 
 #undef OVERRIDE_SERVER_PATH
 
-#define PREFIX ""
+#define DEFAULT_SERVER_PATH "/home/raven/Projects/phonemirror/server/scrcpy-server.jar"
 
-#define PREFIXED_SERVER_PATH "/home/raven/Projects/phonemirror/server/scrcpy-server.jar"
+#define DEFAULT_DEVICE_PATH "/data/local/tmp"
 
 #define SCRCPY_VERSION "0.1"
 

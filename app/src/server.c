@@ -88,12 +88,12 @@ SDL_bool server_start(struct server *server, const char *serial, Uint16 local_po
     if (!push_server(serial)) {
         return SDL_FALSE;
     }
-
     server->server_copied_to_device = SDL_TRUE;
 
     if (!enable_tunnel(serial, local_port)) {
         return SDL_FALSE;
     }
+    server->adb_reverse_enabled = SDL_TRUE;
 
     // At the application level, the device part is "the server" because it
     // serves video stream and control. However, at the network level, the
@@ -115,8 +115,6 @@ SDL_bool server_start(struct server *server, const char *serial, Uint16 local_po
         disable_tunnel(serial);
         return SDL_FALSE;
     }
-
-    server->adb_reverse_enabled = SDL_TRUE;
 
     return SDL_TRUE;
 }

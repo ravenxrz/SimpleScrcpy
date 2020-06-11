@@ -56,3 +56,10 @@ build
 
 # vsocde config
 .vscode
+
+# idea
+.idea
+
+# cmake
+cmake-build-debug
+

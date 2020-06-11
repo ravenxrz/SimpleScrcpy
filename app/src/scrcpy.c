@@ -1,21 +1,17 @@
 #include "scrcpy.h"
-
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 #include <libavformat/avformat.h>
 #include <sys/time.h>
 #include <SDL2/SDL.h>
-
 #include "command.h"
 #include "common.h"
-#include "controller.h"
 #include "decoder.h"
 #include "device.h"
 #include "events.h"
 #include "frames.h"
 #include "fpscounter.h"
-#include "inputmanager.h"
 #include "log.h"
 #include "lockutil.h"
 #include "net.h"
@@ -27,13 +23,6 @@ static struct server server = SERVER_INITIALIZER;
 static struct screen screen = SCREEN_INITIALIZER;
 static struct frames frames;
 static struct decoder decoder;
-static struct controller controller;
-
-static struct input_manager input_manager = {
-    .controller = &controller,
-    .frames = &frames,
-    .screen = &screen,
-};
 
 static void event_loop(void) {
     SDL_Event event;
@@ -63,26 +52,6 @@ static void event_loop(void) {
                     break;
                 }
                 break;
-            case SDL_TEXTINPUT: {
-                input_manager_process_text_input(&input_manager, &event.text);
-                break;
-            }
-            case SDL_KEYDOWN:
-            case SDL_KEYUP:
-                input_manager_process_key(&input_manager, &event.key);
-                break;
-            case SDL_MOUSEMOTION:
-                input_manager_process_mouse_motion(&input_manager, &event.motion);
-                break;
-            case SDL_MOUSEWHEEL: {
-                input_manager_process_mouse_wheel(&input_manager, &event.wheel);
-                break;
-            }
-            case SDL_MOUSEBUTTONDOWN:
-            case SDL_MOUSEBUTTONUP: {
-                input_manager_process_mouse_button(&input_manager, &event.button);
-                break;
-            }
         }
     }
 }
@@ -138,30 +107,15 @@ SDL_bool scrcpy(const char *serial, Uint16 local_port, Uint16 max_size, Uint32 b
         goto finally_destroy_frames;
     }
 
-    if (!controller_init(&controller, device_socket)) {
-        ret = SDL_FALSE;
-        goto finally_stop_decoder;
-    }
-
-    if (!controller_start(&controller)) {
-        ret = SDL_FALSE;
-        goto finally_destroy_controller;
-    }
-
     if (!screen_init_rendering(&screen, device_name, frame_size)) {
         ret = SDL_FALSE;
-        goto finally_stop_and_join_controller;
+        goto finally_stop_decoder;
     }
 
     event_loop();
 
     LOGD("quit...");
     screen_destroy(&screen);
-finally_stop_and_join_controller:
-    controller_stop(&controller);
-    controller_join(&controller);
-finally_destroy_controller:
-    controller_destroy(&controller);
 finally_stop_decoder:
     decoder_stop(&decoder);
     // stop the server before decoder_join() to wake up the decoder
