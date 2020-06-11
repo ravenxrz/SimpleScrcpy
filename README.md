@@ -1,219 +1,84 @@
-# scrcpy
+scrcpy是一款性能极佳的android mirror软件. 考虑到源代码量不算大,所以作为个人的C语言入门项目来阅读.在此简记.
 
-This application provides display and control of Android devices connected on
-USB. It does not require any _root_ access. It works on _GNU/Linux_, _Windows_
-and _Mac OS_.
+源项目repo: https://github.com/Genymobile/scrcpy
 
-![screenshot](assets/screenshot-debian-600.jpg)
+## 1. 说明
 
+项目目前共两个分支:
 
-## Requirements
+- master:对源仓库进行裁剪后的版本(app+server) + 个人复刻的版本(appcopy)
+- pure-complete: 对源仓库进行裁剪后的版本(app+server)
 
-The Android part requires at least API 21 (Android 5.0).
+为了方便阅读scrcpy的源码,个人对源代码进行了裁剪:
 
-You need [adb] (recent enough so that `adb reverse` is implemented, it works
-with 1.0.36). It is available in the [Android SDK platform
-tools][platform-tools], on packaged in your distribution (`android-adb-tools`).
+1.  将源码回滚到了 tag: hidpiscale版本.
+2. 将meson构建系统转为cmake构建.
+3. 删除手机端所需要的所有java代码,仅保留可运行jar包. (由于只分析c语言,所以不想看再分析java的相关代码).
+4. 删除所有keyevent和mouseevent控制, 仅保留镜像功能.
 
-On Windows, just download the [platform-tools][platform-tools-windows] and
-extract the following files to a directory accessible from your `PATH`:
- - `adb.exe`
- - `AdbWinApi.dll`
- - `AdbWinUsbApi.dll`
+## 2. 架构
 
-Make sure you [enabled adb debugging][enable-adb] on your device(s).
+scrcpy本质上就是一个socket通信,所有又server端和client端,但是为了避免混淆,下面用pc端和phone端来解释.
 
-[adb]: https://developer.android.com/studio/command-line/adb.html
-[enable-adb]: https://developer.android.com/studio/command-line/adb.html#Enabling
-[platform-tools]: https://developer.android.com/studio/releases/platform-tools.html
-[platform-tools-windows]: https://dl.google.com/android/repository/platform-tools-latest-windows.zip
+总架构:
 
-The client requires _FFmpeg_ and _LibSDL2_.
+![](https://pic.downk.cc/item/5edf3e4ac2a9a83be5b53113.png)
 
+Phone端会不停地采集屏幕信息然后将其编码并发送给pc端.
 
-## Build and install
+pc端则是不停地接收socket中的frame,解码后回显到屏幕上.
 
-### System-specific steps
+那这个过程涉及到哪些技术呢?
 
-#### Linux
+简单说来,就以下几个.
 
-Install the required packages from your package manager (here, for Debian):
+- 编码,解码 --> ffmpeg.
+- UI展示 --> SDL2
+- 多线程
+- 网络编程
 
-    # runtime dependencies
-    sudo apt install ffmpeg libsdl2-2.0.0
+## 3. 流程
 
-    # build dependencies
-    sudo apt install make gcc openjdk-8-jdk pkg-config meson zip \
-                     libavcodec-dev libavformat-dev libavutil-dev \
-                     libsdl2-dev
+ok,让我们再深入一点.
 
+### phone端
 
-#### Windows
+为什么pc中scrcpy命令一键入后,phone会自动推流? phone中并没有安装任何软件?
 
-For Windows, for simplicity, a prebuilt package with all the dependencies
-(including `adb`) is available: TODO.
+看看源码中server目录下是否又一个jar包? 
 
-Instead, you may want to build it manually. You need [MSYS2] to build the
-project. From an MSYS2 terminal, install the required packages:
+![](https://pic.downk.cc/item/5edf4083c2a9a83be5b8b57f.png)
 
-[MSYS2]: http://www.msys2.org/
+没错,就是它在起作用呢. 每次scrcpy程序启动后,第一件事做的就是将这个jar包push到phone中,然后将它启动,就是它负责采集phone端屏幕信息, 编码, 推流的.
 
-    # runtime dependencies
-    pacman -S mingw-w64-x86_64-SDL2 \
-              mingw-w64-x86_64-ffmpeg
+至于这个jar包具体做的,那就要去看server端的java源码了. 我不关心java端,所以不做分析.
 
-    # build dependencies
-    pacman -S mingw-w64-x86_64-make \
-              mingw-w64-x86_64-gcc \
-              mingw-w64-x86_64-pkg-config \
-              mingw-w64-x86_64-meson \
-              zip
+### pc端
 
-Java (>= 7) is not available in MSYS2, so if you plan to build the server,
-install it manually and make it available from the `PATH`:
+现在回到pc端, 下图展示了整个交互流程.
 
-    export PATH="$JAVA_HOME/bin:$PATH"
+官方图:
 
+```
+                     HOST              DEVICE
+listen on port        |                  |
+push/start the server |----------------->||app_process loads the jar
+init SDL             ||                  ||
+                     ||                  ||
+                     ||                  ||
+                     ||                  ||
+                     ||                  ||
+                     ||                  ||
+accept the connection .                  ||
+                      .                  X execution of our java main
+connection accepted   |<-----------------| connect to the host
+init window/renderer  |                  |
+display frames        |<-----------------| send frames
+                      |<-----------------|
 
-#### Mac OS
+```
 
-Use [Homebrew] to install the packages:
+![](https://pic.downk.cc/item/5edf4322c2a9a83be5bcf967.png)
 
-[Homebrew]: https://brew.sh/
+ok,更多的就去看源码吧.
 
-    # runtime dependencies
-    brew install sdl2 ffmpeg
-
-    # build dependencies
-    brew install gcc pkg-config meson zip
-
-Java (>= 7) is not available in Homebrew, so if you plan to build the server,
-install it manually and make it available from the `PATH`:
-
-    export PATH="$JAVA_HOME/bin:$PATH"
-
-
-### Common steps
-
-Install the [Android SDK] (_Android Studio_), and set `ANDROID_HOME` to
-its directory. For example:
-
-[Android SDK]: https://developer.android.com/studio/index.html
-
-    export ANDROID_HOME=~/android/sdk
-
-Then, build `scrcpy`:
-
-    meson x --buildtype release --strip -Db_lto=true
-    cd x
-    ninja
-
-You can test it from here:
-
-    ninja run
-
-Or you can install it on the system:
-
-    sudo ninja install    # without sudo on Windows
-
-This installs two files:
-
- - `/usr/local/bin/scrcpy`
- - `/usr/local/share/scrcpy/scrcpy-server.jar`
-
-Just remove them to "uninstall" the application.
-
-
-#### Prebuilt server
-
-Since the server binary, that will be pushed to the Android device, does not
-depend on your system and architecture, you may want to use the prebuilt binary
-instead: [`scrcpy-server.jar`](TODO).
-
-In that case, the build does not require Java or the Android SDK.
-
-Download the prebuilt server somewhere, and specify its path during the Meson
-configuration:
-
-    meson x --buildtype release --strip -Db_lto=true \
-        -Dprebuilt_server=/path/to/scrcpy-server.jar
-    cd x
-    ninja
-    sudo ninja install
-
-
-## Run
-
-_At runtime, `adb` must be accessible from your `PATH`._
-
-If everything is ok, just plug an Android device, and execute:
-
-    scrcpy
-
-It accepts command-line arguments, listed by:
-
-    scrcpy --help
-
-For example, to decrease video bitrate to 2Mbps (default is 8Mbps):
-
-    scrcpy -b 2M
-
-To limit the video dimensions (e.g. if the device is 2540×1440, but the host
-screen is smaller, or cannot decode such a high definition):
-
-    scrcpy -m 1024
-
-If several devices are listed in `adb devices`, you must specify the _serial_:
-
-    scrcpy -s 0123456789abcdef
-
-
-## Shortcuts
-
- | Action                                 |   Shortcut    |
- | -------------------------------------  | -------------:|
- | switch fullscreen mode                 | `Ctrl`+`f`    |
- | resize window to 1:1 (pixel-perfect)   | `Ctrl`+`g`    |
- | resize window to remove black borders  | `Ctrl`+`x`    |
- | click on `HOME`                        | `Ctrl`+`h`    |
- | click on `BACK`                        | `Ctrl`+`b`    |
- | click on `APP_SWITCH`                  | `Ctrl`+`m`    |
- | click on `VOLUME_UP`                   | `Ctrl`+`+`    |
- | click on `VOLUME_DOWN`                 | `Ctrl`+`-`    |
- | click on `POWER`                       | `Ctrl`+`p`    |
- | turn screen on                         | _Right-click_ |
- | enable/disable FPS counter (on stdout) | `Ctrl`+`i`    |
-
-
-## Why _scrcpy_?
-
-A colleague challenged me to find a name as unpronounceable as [gnirehtet].
-
-[`strcpy`] copies a **str**ing; `scrcpy` copies a **scr**een.
-
-[gnirehtet]: https://github.com/Genymobile/gnirehtet
-[`strcpy`]: http://man7.org/linux/man-pages/man3/strcpy.3.html
-
-
-## Developers
-
-Read the [developers page].
-
-[developers page]: DEVELOP.md
-
-
-## Licence
-
-    Copyright (C) 2018 Genymobile
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
