@@ -6,7 +6,7 @@ aux_source_directory(./src SRC_DIR)
 # 添加target
 add_executable(pmcopy ${SRC_DIR})
 # 链接依赖库
-target_link_libraries(pmcopy SDL2)
+target_link_libraries(pmcopy SDL2 avformat avcodec avutil)
 
 # 测试
 add_subdirectory(test)

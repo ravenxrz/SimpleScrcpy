@@ -50,7 +50,7 @@ SDL_bool cmd_simple_wait(process_t pid, exit_code_t *exit_code)
 {
     int status;
     int code;
-    if(waitpid(pid,&status,0) != -1 || !WIFEXITED(status))
+    if(waitpid(pid,&status,0) == -1 || !WIFEXITED(status))
     {
         // 无法等待,或者子进程退出异常
         code = -1;
@@ -139,5 +139,7 @@ SDL_bool process_check_success(process_t proc, const char *name)
         }
         return SDL_FALSE;
     }
+
+    LOGD("\"%s\" run success", name);
     return SDL_TRUE;
 }

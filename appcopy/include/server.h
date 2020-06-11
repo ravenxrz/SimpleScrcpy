@@ -54,7 +54,7 @@ void server_init(struct server *server);
 SDL_bool server_start(struct server *server, Uint16 local_port, Uint16 max_size, Uint32 bit_rate);
 
 /**
- * @brief block 知道与deivce建立连接
+ * @brief block until与deivce建立连接
  * 
  * @param server 
  * @param timeout_ms 

@@ -7,7 +7,7 @@
 
 int main(int argc, char const *argv[])
 {
-     SDL_LogSetAllPriority(SDL_LOG_PRIORITY_DEBUG);
+    SDL_LogSetAllPriority(SDL_LOG_PRIORITY_DEBUG);
 
     struct server server;
     server_init(&server);
