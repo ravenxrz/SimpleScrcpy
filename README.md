@@ -1,4 +1,4 @@
-scrcpy是一款性能极佳的android mirror软件. 考虑到源代码量不算大,所以作为个人的C语言入门项目来阅读.在此简记.
+scrcpy是一款性能极佳的android screen mirror软件. 考虑到源代码量不算大,所以作为个人的C语言入门项目来阅读.在此简记.
 
 源项目repo: https://github.com/Genymobile/scrcpy
 
